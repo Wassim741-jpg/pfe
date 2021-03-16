@@ -1,6 +1,7 @@
 package com.project100;
 
 import com.facebook.react.ReactActivity;
+import com.reactnativecommunity.geolocation.GeolocationPackage;
 
 public class MainActivity extends ReactActivity {
 
