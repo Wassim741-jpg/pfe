@@ -7,32 +7,79 @@ const  { width: WIDTH } =Dimensions.get('window')
 
 
 class Home extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            serverURL: '',
+            username: 'username',
+            password:'password'
+        };
+    }
+
+    Login = () => {
+        this.props.navigation.navigate('Profile', { user : this.state.username, psw : this.state.password , URL : this.state.serverURL})
+        const loginURl = this.state.serverURL + '/j_spring_security_check';
+        fetch(loginURl,{
+            method: 'post',
+            withCredentials : true,
+            headers:{
+                'Content-Type' : 'application/x-www-form-urlencoded; charset=utf-8'
+            },
+            body: 'XMLHttpRequest=true&username=' + encodeURIComponent(this.state.username) + '&password=' + encodeURIComponent(this.state.password)
+        }).then((result) => {
+            if (result) {
+              //  console.log(result);
+            }
+        });
+    }
     render() {
         return (
             <ImageBackground source={bgImage} style={styles.backgroundContainer}>
-            <View style={styles.inputContainer}>
-                <TextInput
-                    style={styles.input}
-                    placeholder={'Username'}
-                    placeholderTextColor={'rgba(255,255,255,0.7'}
-                    underlineColorAndroid='transparent'
-                />
-            </View>
-            <View style={styles.inputContainer}>
-                <TextInput
-                    style={styles.input}
-                    placeholder={'Password'}
-                    placeholderTextColor={'rgba(255,255,255,0.7'}
-                    underlineColorAndroid='transparent'
-                />
-            </View>
-            <View >
-                <Button
-                    title="Login"
-                    onPress={() => this.props.navigation.navigate('Profile')}
-                />
-            </View>
-        </ImageBackground>
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        style={styles.input}
+                        placeholder={'URL API'}
+                        placeholderTextColor={'rgba(255,255,255,0.7'}
+                        underlineColorAndroid='transparent'
+                        value={this.state.serverURL}
+                        onChangeText={text =>
+                            this.setState(state => ({serverURL:text}))
+                        }
+                    />
+                </View>
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        style={styles.input}
+                        //placeholder={'Username'}
+                        placeholderTextColor={'rgba(255,255,255,0.7'}
+                        underlineColorAndroid='transparent'
+                        value={this.state.username}
+                        onChangeText={text =>
+                            this.setState(state => ({username:text}))
+
+                        }
+                    />
+                </View>
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        style={styles.input}
+                        placeholder={'Password'}
+                        placeholderTextColor={'rgba(255,255,255,0.7'}
+                        underlineColorAndroid='transparent'
+                        value={this.state.password}
+                        onChangeText={text =>
+                            this.setState(state => ({password:text}))
+
+                        }
+                    />
+                </View>
+                <View >
+                    <Button
+                        title="Login"
+                        onPress={this.Login}
+                    />
+                </View>
+            </ImageBackground>
         )
     }
 }

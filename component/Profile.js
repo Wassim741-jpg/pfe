@@ -1,5 +1,5 @@
 import React from 'react';
-import {StyleSheet, View,Button, Text,ImageBackground,Dimensions} from 'react-native';
+import {StyleSheet, View,Button,ImageBackground, Dimensions} from 'react-native';
 import RNLocation from 'react-native-location';
 import bgImage2 from '../Images/background2.jpg'
 import {TextInput} from "react-native-gesture-handler";
@@ -39,14 +39,20 @@ RNLocation.requestPermission({
         }
     }
 });
-const App = () => {
-    const permissionHandle = async () => {
-        let permission = await RNLocation.checkPermission({
+class Profile extends React.Component{
+    constructor(props) {
+        super(props);
+    }
+    syncLocation = async () => {
+       let permission = await RNLocation.checkPermission({
             ios: 'whenInUse', // or 'always'
             android: {
                 detail: 'coarse' // or 'fine'
             }
         });
+       console.log(this.props.navigation.state.params.user)
+        console.log(this.props.navigation.state.params.psw)
+        console.log(this.props.navigation.state.params.URL)
         let location;
         if(!permission) {
             permission = await RNLocation.requestPermission({
@@ -62,24 +68,36 @@ const App = () => {
                 }
             })
             location = await RNLocation.getLatestLocation({timeout: 100})
-            console.log(location, location.longitude, location.latitude,
-                location.timestamp)
+            sendLocation(location);
         } else {
             location = await RNLocation.getLatestLocation({timeout: 100})
-            console.log(location)
-        }
+          //  console.log(location)
 
+           this.sendLocation(location);
+        }
     }
-    return (
+
+    sendLocation(location) {
+        const locationURl = "https://webhook.site/9fb23852-0b2f-4f00-9934-6cf2532e09be" ;
+        fetch(locationURl,{
+            method: 'post',
+            withCredentials : true,
+            headers:{
+                'Content-Type' : 'application/x-www-form-urlencoded; charset=utf-8'
+            },
+            body: JSON.stringify(location)
+        }).then((result) => {
+            if (result) {
+               // console.log(result);
+            }
+        });
+    }
+
+
+    render()
+    {
+        return (
         <ImageBackground source={bgImage2} style={styles.backgroundContainer}>
-            <View style={styles.inputContainer}>
-                <TextInput
-                    style={styles.input}
-                    placeholder={'URL API'}
-                    placeholderTextColor={'rgba(255,255,255,0.7'}
-                    underlineColorAndroid='transparent'
-                />
-            </View>
             <View style={styles.inputContainer}>
                 <TextInput
                     style={styles.input}
@@ -91,7 +109,7 @@ const App = () => {
             <View >
                 <View style={{marginTop: 10, padding: 10, borderRadius: 10, width: '40%'}}>
                     <Button title="Start sending GPS Location"
-                            onPress={permissionHandle}
+                            onPress={this.syncLocation}
                     />
                 </View>
                 <View style={{marginTop: 10, padding: 10, borderRadius: 10, width: '40%'}}>
@@ -103,7 +121,8 @@ const App = () => {
         </ImageBackground>
 
 
-    );
+    )
+    }
 };
 
 const styles = StyleSheet.create({
@@ -139,4 +158,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default App;
+export default Profile
