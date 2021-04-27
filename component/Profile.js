@@ -9,16 +9,16 @@ const  { width: WIDTH } =Dimensions.get('window')
 
 
 RNLocation.configure({
-    distanceFilter: 100, // Meters
+    distanceFilter: 1.0, // Meters
     desiredAccuracy: {
         ios: "best",
         android: "balancedPowerAccuracy"
     },
     // Android only
     androidProvider: "auto",
-    interval: 5000, // Milliseconds
-    fastestInterval: 10000, // Milliseconds
-    maxWaitTime: 5000, // Milliseconds
+    interval: 1000, // Milliseconds
+    fastestInterval: 1000, // Milliseconds
+    maxWaitTime: 1000, // Milliseconds
     // iOS Only
     activityType: "other",
     allowsBackgroundLocationUpdates: false,
@@ -42,6 +42,10 @@ RNLocation.requestPermission({
 class Profile extends React.Component{
     constructor(props) {
         super(props);
+        this.state = {
+            serverURL: '',
+            BoardID: '2',
+        };
     }
     syncLocation = async () => {
        let permission = await RNLocation.checkPermission({
@@ -50,9 +54,6 @@ class Profile extends React.Component{
                 detail: 'coarse' // or 'fine'
             }
         });
-       console.log(this.props.navigation.state.params.user)
-        console.log(this.props.navigation.state.params.psw)
-        console.log(this.props.navigation.state.params.URL)
         let location;
         if(!permission) {
             permission = await RNLocation.requestPermission({
@@ -67,28 +68,41 @@ class Profile extends React.Component{
                     }
                 }
             })
-            location = await RNLocation.getLatestLocation({timeout: 100})
+            location = await RNLocation.getLatestLocation({timeout: 2})
             sendLocation(location);
         } else {
-            location = await RNLocation.getLatestLocation({timeout: 100})
-          //  console.log(location)
+            location = await RNLocation.getLatestLocation({timeout: 2})
+            console.log(location)
+            console.log("-------------------------")
 
            this.sendLocation(location);
         }
     }
 
     sendLocation(location) {
-        const locationURl = "https://webhook.site/9fb23852-0b2f-4f00-9934-6cf2532e09be" ;
+        const form = new FormData();
+        form.append('longitude', location.longitude);
+        form.append('latitude', location.latitude);
+        form.append('speedAccuracy', location.speedAccuracy);
+        form.append('speed', location.speed);
+        form.append('courseAccuracy', location.courseAccuracy);
+        form.append('course', location.course);
+        form.append('fromMockProvider', location.fromMockProvider);
+        form.append('altitudeAccuracy', location.altitudeAccuracy);
+        form.append('altitude', location.altitude);
+        form.append('accuracy', location.accuracy);
+        form.append('BoardID', this.state.BoardID);
+
+        const url = this.props.navigation.state.params.URL;
+        const locationURl = url + "/s/servlet/spaghettiaddon/addcoord" ;
         fetch(locationURl,{
-            method: 'post',
-            withCredentials : true,
-            headers:{
-                'Content-Type' : 'application/x-www-form-urlencoded; charset=utf-8'
-            },
-            body: JSON.stringify(location)
+             headers: { 'Accept': 'application/json', 'Content-Type': 'multipart/form-data' },
+            credentials: 'include',
+            method: 'POST',
+            body:form
         }).then((result) => {
             if (result) {
-               // console.log(result);
+              //  console.log(result);
             }
         });
     }
@@ -101,9 +115,13 @@ class Profile extends React.Component{
             <View style={styles.inputContainer}>
                 <TextInput
                     style={styles.input}
-                    placeholder={'BORD ID'}
-                    placeholderTextColor={'rgba(255,255,255,0.7'}
+                    placeholder={'BoardID'}
+                    placeholderTextColor={'rgba(255,255,255,0.7)'}
                     underlineColorAndroid='transparent'
+                    value={this.state.BoardID}
+                    onChangeText={text =>
+                        this.setState(state => ({BoardID:text}))
+                    }
                 />
             </View>
             <View >

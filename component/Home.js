@@ -11,24 +11,24 @@ class Home extends React.Component {
         super(props);
         this.state = {
             serverURL: '',
-            username: 'username',
-            password:'password'
+            username: 'admin',
+            password:'admin'
         };
     }
 
     Login = () => {
         this.props.navigation.navigate('Profile', { user : this.state.username, psw : this.state.password , URL : this.state.serverURL})
         const loginURl = this.state.serverURL + '/j_spring_security_check';
-        fetch(loginURl,{
+       fetch(loginURl,{
             method: 'post',
-            withCredentials : true,
+            credentials: 'same-origin',
             headers:{
                 'Content-Type' : 'application/x-www-form-urlencoded; charset=utf-8'
             },
             body: 'XMLHttpRequest=true&username=' + encodeURIComponent(this.state.username) + '&password=' + encodeURIComponent(this.state.password)
         }).then((result) => {
             if (result) {
-              //  console.log(result);
+             //  console.log(result);
             }
         });
     }
@@ -38,8 +38,8 @@ class Home extends React.Component {
                 <View style={styles.inputContainer}>
                     <TextInput
                         style={styles.input}
-                        placeholder={'URL API'}
-                        placeholderTextColor={'rgba(255,255,255,0.7'}
+                      //  placeholder={'URL API'}
+                        placeholderTextColor={'rgba(255,255,255,0.7)'}
                         underlineColorAndroid='transparent'
                         value={this.state.serverURL}
                         onChangeText={text =>
@@ -50,7 +50,6 @@ class Home extends React.Component {
                 <View style={styles.inputContainer}>
                     <TextInput
                         style={styles.input}
-                        //placeholder={'Username'}
                         placeholderTextColor={'rgba(255,255,255,0.7'}
                         underlineColorAndroid='transparent'
                         value={this.state.username}
@@ -63,7 +62,7 @@ class Home extends React.Component {
                 <View style={styles.inputContainer}>
                     <TextInput
                         style={styles.input}
-                        placeholder={'Password'}
+                      //  placeholder={'Password'}
                         placeholderTextColor={'rgba(255,255,255,0.7'}
                         underlineColorAndroid='transparent'
                         value={this.state.password}
