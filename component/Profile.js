@@ -30,7 +30,7 @@ RNLocation.configure({
 RNLocation.requestPermission({
     ios: 'whenInUse', // or 'always'
     android: {
-        detail: 'coarse', // or 'fine'
+        detail: 'fine', // or 'fine'
         rationale: {
             title: "We need to access your location",
             message: "We use your location to show where you are on the map",
@@ -48,10 +48,10 @@ class Profile extends React.Component{
         };
     }
     syncLocation = async () => {
-       let permission = await RNLocation.checkPermission({
+        let permission = await RNLocation.checkPermission({
             ios: 'whenInUse', // or 'always'
             android: {
-                detail: 'coarse' // or 'fine'
+                detail: 'fine' // or 'fine'
             }
         });
         let location;
@@ -59,7 +59,7 @@ class Profile extends React.Component{
             permission = await RNLocation.requestPermission({
                 ios: "whenInUse",
                 android: {
-                    detail: "coarse",
+                    detail: "fine",
                     rationale: {
                         title: "We need to access your location",
                         message: "We use your location to show where you are on the map",
@@ -75,7 +75,7 @@ class Profile extends React.Component{
             console.log(location)
             console.log("-------------------------")
 
-           this.sendLocation(location);
+            this.sendLocation(location);
         }
     }
 
@@ -96,13 +96,13 @@ class Profile extends React.Component{
         const url = this.props.navigation.state.params.URL;
         const locationURl = url + "/s/servlet/spaghettiaddon/addcoord" ;
         fetch(locationURl,{
-             headers: { 'Accept': 'application/json', 'Content-Type': 'multipart/form-data' },
+            headers: { 'Accept': 'application/json', 'Content-Type': 'multipart/form-data' },
             credentials: 'include',
             method: 'POST',
             body:form
         }).then((result) => {
             if (result) {
-              //  console.log(result);
+                //  console.log(result);
             }
         });
     }
@@ -111,35 +111,35 @@ class Profile extends React.Component{
     render()
     {
         return (
-        <ImageBackground source={bgImage2} style={styles.backgroundContainer}>
-            <View style={styles.inputContainer}>
-                <TextInput
-                    style={styles.input}
-                    placeholder={'BoardID'}
-                    placeholderTextColor={'rgba(255,255,255,0.7)'}
-                    underlineColorAndroid='transparent'
-                    value={this.state.BoardID}
-                    onChangeText={text =>
-                        this.setState(state => ({BoardID:text}))
-                    }
-                />
-            </View>
-            <View >
-                <View style={{marginTop: 10, padding: 10, borderRadius: 10, width: '40%'}}>
-                    <Button title="Start sending GPS Location"
-                            onPress={this.syncLocation}
+            <ImageBackground source={bgImage2} style={styles.backgroundContainer}>
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        style={styles.input}
+                        placeholder={'BoardID'}
+                        placeholderTextColor={'rgba(255,255,255,0.7)'}
+                        underlineColorAndroid='transparent'
+                        value={this.state.BoardID}
+                        onChangeText={text =>
+                            this.setState(state => ({BoardID:text}))
+                        }
                     />
                 </View>
-                <View style={{marginTop: 10, padding: 10, borderRadius: 10, width: '40%'}}>
-                    <Button
-                        title="Stop sending GPS Location"
-                    />
+                <View >
+                    <View style={{marginTop: 10, padding: 10, borderRadius: 10, width: '40%'}}>
+                        <Button title="Start sending GPS Location"
+                                onPress={this.syncLocation}
+                        />
+                    </View>
+                    <View style={{marginTop: 10, padding: 10, borderRadius: 10, width: '40%'}}>
+                        <Button
+                            title="Stop sending GPS Location"
+                        />
+                    </View>
                 </View>
-            </View>
-        </ImageBackground>
+            </ImageBackground>
 
 
-    )
+        )
     }
 };
 
