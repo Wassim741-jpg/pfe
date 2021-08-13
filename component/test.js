@@ -10,6 +10,10 @@ class test extends React.Component{
             initialPosition: 'unknown',
             lastPosition: 'unknown',
             step : 1 ,
+            altitude : 0.0 ,
+            accuracy : 0.0 ,
+            longitude : 0.0 ,
+            latitude : 0.0 ,
         };
     }
     watchID: ?number = null;
@@ -30,22 +34,51 @@ class test extends React.Component{
                         console.log("je vais appeler la fonction getcurrectPosition");
                         const initialPosition = JSON.stringify(position);
                         this.setState({step : this.state.step +1});
+                        this.setState({accuracy : position.coords.accuracy}) ;
+                        this.setState({altitude : position.coords.altitude}) ;
+                        this.setState({longitude : position.coords.longitude}) ;
+                        this.setState({latitude : position.coords.latitude}) ;
                          this.setState({initialPosition:initialPosition});
-                        console.log("jai modifie dans initial position")
+                        console.log("jai modifie dans initial position");
+                        this.setState({ PointIndex: 'randomPoint' });
 
 
                     },
                     error => Alert.alert('Error', JSON.stringify(error)),
-                    {enableHighAccuracy: true, timeout: 5000, maximumAge: 1000},
+                    {enableHighAccuracy: false,
+                        timeout: 2000,
+                        maximumAge: 3600000},
                 );
                 this.watchID = Geolocation.watchPosition(position => {
                     console.log('je suis dans le watcher')
                     const lastPosition = JSON.stringify(position);
+                    this.setState({accuracy : position.coords.accuracy}) ;
+                    this.setState({altitude : position.coords.altitude}) ;
+                    this.setState({longitude : position.coords.longitude}) ;
+                    this.setState({latitude : position.coords.latitude}) ;
                     this.setState({initialPosition : lastPosition});
                     console.log('jai modife dans lastposition')
 
                 });
-                console.log("finish")
+                console.log("finish");
+         const form = new FormData();
+         form.append('longitude', this.state.longitude);
+         form.append('latitude', this.state.latitude);
+         form.append('altitude', this.state.altitude);
+         form.append('accuracy', this.state.accuracy);
+
+       //  const url = this.props.navigation.state.params.URL;
+         const locationURl = "https://webhook.site/780aa58e-ec6f-4f7e-83e4-95159a4f072a" ;
+         fetch(locationURl,{
+             headers: { 'Accept': 'application/json', 'Content-Type': 'multipart/form-data' },
+             credentials: 'include',
+             method: 'POST',
+             body:form
+         }).then((result) => {
+             if (result) {
+                 //  console.log(result);
+             }
+         });
 
 
     }

@@ -1,118 +1,109 @@
 import React from 'react';
-import {StyleSheet, View,Button,ImageBackground, Dimensions} from 'react-native';
-import RNLocation from 'react-native-location';
+import {StyleSheet, View,Button,ImageBackground, Alert,Text, Dimensions} from 'react-native';
+import Geolocation from '@react-native-community/geolocation';
 import bgImage2 from '../Images/background2.jpg'
 import {TextInput} from "react-native-gesture-handler";
 const  { width: WIDTH } =Dimensions.get('window')
 
 
-
-
-RNLocation.configure({
-    distanceFilter: 1.0, // Meters
-    desiredAccuracy: {
-        ios: "best",
-        android: "balancedPowerAccuracy"
-    },
-    // Android only
-    androidProvider: "auto",
-    interval: 1000, // Milliseconds
-    fastestInterval: 1000, // Milliseconds
-    maxWaitTime: 1000, // Milliseconds
-    // iOS Only
-    activityType: "other",
-    allowsBackgroundLocationUpdates: false,
-    headingFilter: 1, // Degrees
-    headingOrientation: "portrait",
-    pausesLocationUpdatesAutomatically: false,
-    showsBackgroundLocationIndicator: false,
-})
-RNLocation.requestPermission({
-    ios: 'whenInUse', // or 'always'
-    android: {
-        detail: 'fine', // or 'fine'
-        rationale: {
-            title: "We need to access your location",
-            message: "We use your location to show where you are on the map",
-            buttonPositive: "OK",
-            buttonNegative: "Cancel"
-        }
-    }
-});
 class Profile extends React.Component{
     constructor(props) {
         super(props);
         this.state = {
             serverURL: '',
             BoardID: '2',
+            initialPosition: 'unknown',
+            altitude : 0.0 ,
+            accuracy : 0.0 ,
+            longitude : 0.0 ,
+            latitude : 0.0 ,
+            PointIndex: 'FirstPoint',
         };
     }
-    syncLocation = async () => {
-        let permission = await RNLocation.checkPermission({
-            ios: 'whenInUse', // or 'always'
-            android: {
-                detail: 'fine' // or 'fine'
-            }
-        });
-        let location;
-        if(!permission) {
-            permission = await RNLocation.requestPermission({
-                ios: "whenInUse",
-                android: {
-                    detail: "fine",
-                    rationale: {
-                        title: "We need to access your location",
-                        message: "We use your location to show where you are on the map",
-                        buttonPositive: "OK",
-                        buttonNegative: "Cancel"
-                    }
-                }
-            })
-            location = await RNLocation.getLatestLocation({timeout: 2})
-            sendLocation(location);
-        } else {
-            location = await RNLocation.getLatestLocation({timeout: 2})
-            console.log(location)
-            console.log("-------------------------")
+    watchID: ?number = null;
+    componentDidMount() {
+        Geolocation.getCurrentPosition(
+            position => {
+                console.log("je vais appeler la fonction getcurrectPosition");
+                const initialPosition = JSON.stringify(position);
+                this.setState({step : this.state.step +1});
+                this.setState({accuracy : position.coords.accuracy}) ;
+                this.setState({altitude : position.coords.altitude}) ;
+                this.setState({longitude : position.coords.longitude}) ;
+                this.setState({latitude : position.coords.latitude}) ;
+                this.setState({initialPosition:initialPosition});
+                console.log("jai modifie dans initial position");
 
-            this.sendLocation(location);
+            },
+            error => Alert.alert('Error', JSON.stringify(error)),
+            {enableHighAccuracy: true,
+                timeout: 2000,
+                maximumAge: 3600000},
+        );
+        this.watchID = Geolocation.watchPosition(position => {
+            console.log('je suis dans le watcher')
+            const lastPosition = JSON.stringify(position);
+            this.setState({accuracy : position.coords.accuracy}) ;
+            this.setState({altitude : position.coords.altitude}) ;
+            this.setState({longitude : position.coords.longitude}) ;
+            this.setState({latitude : position.coords.latitude}) ;
+            this.setState({initialPosition : lastPosition});
+            console.log('jai modife dans lastposition')
+
+        });
+        console.log("finish");
+    }
+    componentWillUnmount() {
+        console.log("it's clean ");
+    }
+    sendLocation() {
+        if (this.state.accuracy != 0.0) {
+            const form = new FormData();
+            form.append('longitude', this.state.longitude);
+            form.append('latitude', this.state.latitude);
+            form.append('altitude', this.state.altitude);
+            form.append('accuracy', this.state.accuracy);
+            form.append('BoardID', this.state.BoardID);
+            form.append('PointIndex', this.state.PointIndex);
+
+            const url = this.props.navigation.state.params.URL;
+            const locationURl = url + "/s/servlet/spaghettiaddon/addcoord";
+            fetch(locationURl, {
+                headers: {'Accept': 'application/json', 'Content-Type': 'multipart/form-data'},
+                credentials: 'include',
+                method: 'POST',
+                body: form
+            }).then((result) => {
+                if (result) {
+                    //  console.log(result);
+                }
+            });
+            console.log("request sent");
+            console.log(this.state.accuracy);
+            this.setState({PointIndex: 'randomPoint'});
         }
     }
+    Login3 = () => {
+        this.componentDidMount();
+        this.sendLocation();
+        this.componentWillUnmount();
 
-    sendLocation(location) {
-        const form = new FormData();
-        form.append('longitude', location.longitude);
-        form.append('latitude', location.latitude);
-        form.append('speedAccuracy', location.speedAccuracy);
-        form.append('speed', location.speed);
-        form.append('courseAccuracy', location.courseAccuracy);
-        form.append('course', location.course);
-        form.append('fromMockProvider', location.fromMockProvider);
-        form.append('altitudeAccuracy', location.altitudeAccuracy);
-        form.append('altitude', location.altitude);
-        form.append('accuracy', location.accuracy);
-        form.append('BoardID', this.state.BoardID);
-
-        const url = this.props.navigation.state.params.URL;
-        const locationURl = url + "/s/servlet/spaghettiaddon/addcoord" ;
-        fetch(locationURl,{
-            headers: { 'Accept': 'application/json', 'Content-Type': 'multipart/form-data' },
-            credentials: 'include',
-            method: 'POST',
-            body:form
-        }).then((result) => {
-            if (result) {
-                //  console.log(result);
-            }
-        });
     }
-
 
     render()
     {
         return (
             <ImageBackground source={bgImage2} style={styles.backgroundContainer}>
                 <View style={styles.inputContainer}>
+                    <View>
+                        <Text>
+                            <Text style={styles.title}> position: </Text>
+                            {this.state.initialPosition}
+                        </Text>
+                        <Text>
+                            <Text> ----------------------------------- </Text>
+                        </Text>
+                    </View>
                     <TextInput
                         style={styles.input}
                         placeholder={'BoardID'}
@@ -127,7 +118,7 @@ class Profile extends React.Component{
                 <View >
                     <View style={{marginTop: 10, padding: 10, borderRadius: 10, width: '40%'}}>
                         <Button title="Start sending GPS Location"
-                                onPress={this.syncLocation}
+                                onPress={this.Login3}
                         />
                     </View>
                     <View style={{marginTop: 10, padding: 10, borderRadius: 10, width: '40%'}}>

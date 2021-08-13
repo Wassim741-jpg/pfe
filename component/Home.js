@@ -15,15 +15,8 @@ class Home extends React.Component {
             password:'admin'
         };
     }
-    Login1 = () => {
-        this.props.navigation.navigate('test');
-
-    }
-    Login2 = () => {
-        this.props.navigation.navigate('Profile');
-    }
     Login = () => {
-        this.props.navigation.navigate('test', { user : this.state.username, psw : this.state.password , URL : this.state.serverURL})
+        this.props.navigation.navigate('Profile', { user : this.state.username, psw : this.state.password , URL : this.state.serverURL})
         const loginURl = this.state.serverURL + '/j_spring_security_check';
        fetch(loginURl,{
             method: 'post',
@@ -83,19 +76,13 @@ class Home extends React.Component {
                 </Text>
                 <View >
                     <Button
-                        title="use react-native-community/geolocation (recommended API)"
-                        onPress={this.Login1}
+                        title="Login"
+                        onPress={this.Login}
                     />
                 </View>
                 <Text>
                     <Text> ----------------------------------- </Text>
                 </Text>
-                <View >
-                    <Button
-                        title="use react-native-location"
-                        onPress={this.Login2}
-                    />
-                </View>
             </ImageBackground>
         )
     }
